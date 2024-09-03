@@ -1,3 +1,6 @@
+body{
+    background-color: #ccc;
+}
 .cart-container {
     display: flex;
     justify-content: space-between;

@@ -8,11 +8,10 @@ const AddToCart = () => {
 
   useEffect(() => {
     const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
-    // Ensure product_cost is a number with decimal places
     const normalizedCart = storedCart.map((item) => ({
       ...item,
       quantity: item.quantity || 1,
-      product_cost: parseFloat(item.product_cost) || 0, // Convert to float for decimal precision
+      product_cost: parseFloat(item.product_cost) || 0, 
     }));
     setCart(normalizedCart);
     console.log("Loaded Cart:", normalizedCart); // Debugging
