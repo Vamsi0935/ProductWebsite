@@ -1,6 +1,7 @@
-body{
+body {
     background-color: #ccc;
 }
+
 .cart-container {
     display: flex;
     justify-content: space-between;
@@ -10,6 +11,10 @@ body{
 .cart-items {
     width: 40%;
     margin-left: 15%;
+}
+
+.cart-item {
+    background-color: white;
 }
 
 .cart-summary {

@@ -14,7 +14,7 @@ const AddToCart = () => {
       product_cost: parseFloat(item.product_cost) || 0, 
     }));
     setCart(normalizedCart);
-    console.log("Loaded Cart:", normalizedCart); // Debugging
+    console.log("Loaded Cart:", normalizedCart); 
   }, [location]);
 
   const removeFromCart = (indexToRemove) => {
@@ -48,7 +48,7 @@ const AddToCart = () => {
         total + (product.product_cost || 0) * (product.quantity || 1),
       0
     );
-    console.log("Calculated Total:", total); // Debugging
+    console.log("Calculated Total:", total); 
     return total;
   };
 
