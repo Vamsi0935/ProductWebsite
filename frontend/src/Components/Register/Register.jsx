@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./register.css";
+import Swal from "sweetalert2";
 
 const Register = () => {
   const [fullname, setFullname] = useState("");
@@ -15,16 +17,42 @@ const Register = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    console.log("Registration Attempted with:", {
-      fullname,
-      email,
-      phoneNumber,
-      password,
-    });
-
-    navigate("/login");
+    try {
+      const res = await axios.post("http://localhost:5000/api/users/register", {
+        fullname,
+        email,
+        phoneNumber,
+        password,
+      });
+      if (res.status === 201) {
+        Swal.fire({
+          title: "Registration Successful!",
+          text: "You can now log in with your credentials.",
+          icon: "success",
+          confirmButtonText: "OK",
+        }).then(() => {
+          navigate("/login");
+        });
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 400) {
+        Swal.fire({
+          title: "Error",
+          text: "Email already exists. Please use a different email.",
+          icon: "error",
+          confirmButtonText: "Try Again",
+        });
+      } else {
+        Swal.fire({
+          title: "Error",
+          text: err.message || "An unexpected error occurred.",
+          icon: "error",
+          confirmButtonText: "Close",
+        });
+      }
+    }
   };
 
   return (

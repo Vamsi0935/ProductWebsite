@@ -4,10 +4,16 @@ import { products } from "../utils/Data";
 import "./shop.css";
 
 const Shop = () => {
-  const [wishlist, setWishlist] = useState([]);
+  const [wishlist, setWishlist] = useState(() => {
+    const savedWishlist = JSON.parse(localStorage.getItem("wishlist"));
+    return savedWishlist || [];
+  });
   // eslint-disable-next-line no-unused-vars
-  const [cart, setCart] = useState([]);
-  const navigate = useNavigate(); 
+  const [cart, setCart] = useState(() => {
+    const savedCart = JSON.parse(localStorage.getItem("cart"));
+    return savedCart || [];
+  });
+  const navigate = useNavigate();
 
   const toggleWishlist = (product) => {
     setWishlist((prevWishlist) => {
@@ -45,51 +51,48 @@ const Shop = () => {
   };
 
   return (
-    <>
-      <div className="container mt-5">
-        <div className="row row-cols-1 row-cols-md-3 g-4">
-          {products.map((product, index) => (
-            <div className="col" key={index}>
-              <div className="card">
-                <img
-                  src={product.product_url}
-                  className="card-img-top"
-                  alt={product.product_title}
-                />
-                <div className="card-body">
-                  <h5 className="card-title">{product.product_title}</h5>
-                  <p className="card-text">{product.product_content}</p>
-                  <p className="card-text">
-                    <strong>{product.product_cost}</strong>
-                  </p>
-                  <div className="button-group">
-                    {/* <button className="btn btn-outline-success">Buy</button> */}
-                    <button
-                      className="btn btn-outline-secondary"
-                      onClick={() => addToCart(product)} 
-                    >
-                      Add to Cart
-                    </button>
-                    <button
-                      className={`btn ${
-                        isInWishlist(product)
-                          ? "btn-primary"
-                          : "btn-outline-primary"
-                      }`}
-                      onClick={() => handleWishlistClick(product)}
-                    >
-                      {isInWishlist(product)
-                        ? "Remove from Wishlist"
-                        : "Add to Wishlist"}
-                    </button>
-                  </div>
+    <div className="container mt-5">
+      <div className="row row-cols-1 row-cols-md-3 g-4">
+        {products.map((product, index) => (
+          <div className="col" key={index}>
+            <div className="card">
+              <img
+                src={product.product_url}
+                className="card-img-top"
+                alt={product.product_title}
+              />
+              <div className="card-body">
+                <h5 className="card-title">{product.product_title}</h5>
+                <p className="card-text">{product.product_content}</p>
+                <p className="card-text">
+                  <strong>{product.product_cost}</strong>
+                </p>
+                <div className="button-group">
+                  <button
+                    className="btn btn-outline-secondary"
+                    onClick={() => addToCart(product)}
+                  >
+                    Add to Cart
+                  </button>
+                  <button
+                    className={`btn ${
+                      isInWishlist(product)
+                        ? "btn-primary"
+                        : "btn-outline-primary"
+                    }`}
+                    onClick={() => handleWishlistClick(product)}
+                  >
+                    {isInWishlist(product)
+                      ? "Remove from Wishlist"
+                      : "Add to Wishlist"}
+                  </button>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
-    </>
+    </div>
   );
 };
 

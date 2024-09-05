@@ -1,20 +1,53 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import "./login.css";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Login Attempted with:", email, password);
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/users/login",
+        { email, password },
+        { withCredentials: true }
+      );
+      if (res.data.success) {
+        Swal.fire({
+          title: "Login Successful!",
+          text: "You are now logged in.",
+          icon: "success",
+          confirmButtonText: "OK",
+        }).then(() => {
+          navigate("/shop", { state: { user: res.data.user } });
+        });
+      } else {
+        Swal.fire({
+          title: "Login Failed",
+          text: res.data.message || "An error occurred.",
+          icon: "error",
+          confirmButtonText: "Try Again",
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        title: "Error",
+        text: error.res ? error.res.data.message : error.message,
+        icon: "error",
+        confirmButtonText: "Close",
+      });
+    }
   };
 
   return (

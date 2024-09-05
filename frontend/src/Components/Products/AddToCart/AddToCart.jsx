@@ -11,10 +11,10 @@ const AddToCart = () => {
     const normalizedCart = storedCart.map((item) => ({
       ...item,
       quantity: item.quantity || 1,
-      product_cost: parseFloat(item.product_cost) || 0, 
+      product_cost: parseFloat(item.product_cost) || 0,
     }));
     setCart(normalizedCart);
-    console.log("Loaded Cart:", normalizedCart); 
+    console.log("Loaded Cart:", normalizedCart);
   }, [location]);
 
   const removeFromCart = (indexToRemove) => {
@@ -43,20 +43,21 @@ const AddToCart = () => {
   };
 
   const calculateTotal = () => {
-    const total = cart.reduce(
+    return cart.reduce(
       (total, product) =>
         total + (product.product_cost || 0) * (product.quantity || 1),
       0
     );
-    console.log("Calculated Total:", total); 
-    return total;
   };
 
   return (
     <div className="cart-container">
       <div className="cart-items">
         {cart.length === 0 ? (
-          <p className="text-center display-6 mt-5">Your cart is empty.</p>
+          <div className="text-center empty-cart">
+            <h5 className="display-6">Nothing yet.</h5>
+            <p>Start adding to your cart to view them here.</p>
+          </div>
         ) : (
           cart.map((product, index) => (
             <div className="cart-item" key={index}>
@@ -75,7 +76,7 @@ const AddToCart = () => {
                   <button onClick={() => updateQuantity(index, false)}>
                     -
                   </button>
-                  <span>{product.quantity || 1}</span>
+                  <span>{product.quantity}</span>
                   <button onClick={() => updateQuantity(index, true)}>+</button>
                 </div>
                 <button

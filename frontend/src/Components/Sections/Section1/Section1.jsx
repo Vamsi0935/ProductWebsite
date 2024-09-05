@@ -9,7 +9,7 @@ const Section1 = () => {
       <h1 className="display-1">
         Small credit card <br /> reader, big possibilities.
       </h1>
-      <button type="button">
+      <button type="button" className="button">
         Get a free reader
       </button>
       <p>

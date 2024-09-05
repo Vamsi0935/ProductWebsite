@@ -10,6 +10,8 @@ import withReactContent from "sweetalert2-react-content";
 const Navbar = () => {
   const [wishlist, setWishlist] = useState([]);
   const [cartCount, setCartCount] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const MySwal = withReactContent(Swal);
   const navigate = useNavigate();
 
@@ -19,33 +21,24 @@ const Navbar = () => {
 
     const storedWishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
     setWishlist(storedWishlist);
+
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token); 
+
+    console.log("Login status:", !!token); 
   }, []);
 
-  // eslint-disable-next-line no-unused-vars
-  const toggleWishlist = (product) => {
-    const isAlreadyInWishlist = wishlist.some(
-      (item) => item.product_url === product.product_url
-    );
-
-    const updatedWishlist = isAlreadyInWishlist
-      ? wishlist.filter((item) => item.product_url !== product.product_url)
-      : [...wishlist, product];
-
-    setWishlist(updatedWishlist);
-    localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
-
-    const message = isAlreadyInWishlist
-      ? "Removed from Wishlist"
-      : "Added to Wishlist";
-
-    MySwal.fire({
-      title: `${product.product_title}`,
-      text: `${message}`,
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsLoggedIn(false);
+    Swal.fire({
+      title: "Logged Out",
+      text: "You have been logged out.",
       icon: "success",
       confirmButtonText: "OK",
+    }).then(() => {
+      navigate("/");
     });
-
-    navigate("/wish-list");
   };
 
   return (
@@ -74,16 +67,37 @@ const Navbar = () => {
         </div>
         <div className="header-right">
           <ul>
-            <li>
-              <Link to="/login" className="text-decoration-none text-black">
-                Sign In
-              </Link>
-            </li>
-            <li>
-              <Link to="/register" className="text-decoration-none text-black">
-                Register
-              </Link>
-            </li>
+            {!isLoggedIn ? (
+              <>
+                <li>
+                  <Link to="/login" className="text-decoration-none text-black">
+                    Sign In
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/register"
+                    className="text-decoration-none text-black"
+                  >
+                    Register
+                  </Link>
+                </li>
+              </>
+            ) : (
+              <>
+                <li>
+                  <Link
+                    to="/profile"
+                    className="text-decoration-none text-black"
+                  >
+                    Profile
+                  </Link>
+                </li>
+                <li onClick={handleLogout} style={{ cursor: "pointer" }}>
+                  Logout
+                </li>
+              </>
+            )}
             <li>
               <Link to="/shop" className="text-decoration-none text-black">
                 Shop

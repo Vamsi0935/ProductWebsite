@@ -20,11 +20,15 @@
     color: #555;
 }
 
-.section-container button {
+.section-container .button {
     margin-top: 20px;
     padding: 10px 20px;
     font-size: 1rem;
     cursor: pointer;
+    background-color: rgb(65, 65, 203);
+    color: white;
+    border: none;
+    border-radius: 10px;
 }
 
 .section-container p {
