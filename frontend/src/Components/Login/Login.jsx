@@ -4,12 +4,15 @@ import { IoEye, IoEyeOff } from "react-icons/io5";
 import "./login.css";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { useDispatch } from "react-redux";
+import { signInFailure, signInStart } from "../../redux/user/userSlice";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
@@ -18,6 +21,7 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
+      dispatch(signInStart());
       const res = await axios.post(
         "http://localhost:5000/api/users/login",
         { email, password },
@@ -41,6 +45,7 @@ const Login = () => {
         });
       }
     } catch (error) {
+      dispatch(signInFailure(error.message));
       Swal.fire({
         title: "Error",
         text: error.res ? error.res.data.message : error.message,

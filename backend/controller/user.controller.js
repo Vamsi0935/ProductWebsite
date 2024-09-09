@@ -2,16 +2,14 @@ const UserModel = require("../model/user.model");
 const ContactModel = require("../model/contact.model");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { errorHandler } = require("../utils/error");
 
 const registerUser = async (req, res, next) => {
   try {
     const { fullname, email, phoneNumber, password } = req.body;
     const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "User already exists.....",
-      });
+      return next(errorHandler(400, "User already exist..."));
     }
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -36,40 +34,40 @@ const loginUser = async (req, res, next) => {
     const { email, password } = req.body;
     const user = await UserModel.findOne({ email });
     if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Credentials",
-        note: "User with this email does not exist",
-      });
+      return next(errorHandler(404, "User not found..."));
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid Password...",
-      });
+      return next(errorHandler(404, "Wrong Credentials...."));
     }
 
-    // Include user id in the token payload and response
     const token = jwt.sign(
       {
         id: user._id,
-        email: user.email,
       },
       "vamsikrishnad"
     );
+    const { password: pass, ...rest } = user._doc;
 
-    res.status(200).json({
+    res.cookie("access-token", token, { httpOnly: true }).status(200).json({
       success: true,
       message: "User Login successfully...",
-      token,
-      user: {
-        id: user._id, 
-        email: user.email,
-      },
+      rest,
     });
   } catch (err) {
     next(err);
+  }
+};
+
+const logoutUser = async (req, res, next) => {
+  try {
+    res.clearCookie("access_token");
+    res.status(200).json({
+      success: true,
+      message: "User logout successfully...",
+    });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -86,4 +84,4 @@ const contactUser = async (req, res, next) => {
   }
 };
 
-module.exports = { registerUser, loginUser, contactUser };
+module.exports = { registerUser, loginUser, logoutUser, contactUser };

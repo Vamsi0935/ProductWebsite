@@ -4,7 +4,7 @@ const Cart = require("../model/cart.model");
 exports.addToCart = async (req, res) => {
   const { user_id, product } = req.body;
 
-  try {
+  try { 
     let cart = await Cart.findOne({ user_id });
     if (!cart) {
       cart = new Cart({ user_id, items: [product] });

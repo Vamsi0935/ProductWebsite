@@ -1,9 +1,11 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 
 app.use(
   cors({
@@ -26,8 +28,11 @@ mongoose
 // Routes
 const userRoutes = require("./routes/user.route");
 const cartRoutes = require("./routes/cart.route");
+const wishlistRoutes = require("./routes/wishlist.route");
+
 app.use("/api/users", userRoutes);
-app.use("/api/cart", cartRoutes);
+app.use("/api/addtocart", cartRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 
 // Error handling
 app.use((err, req, res, next) => {
