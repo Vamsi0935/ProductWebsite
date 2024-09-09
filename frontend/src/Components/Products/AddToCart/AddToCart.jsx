@@ -1,45 +1,100 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "../utils/AuthProvider";
 import "./addtocart.css";
 
 const AddToCart = () => {
   const [cart, setCart] = useState([]);
+  const [loading, setLoading] = useState(false);
   const location = useLocation();
+  const auth = useAuth();
+  const user = auth?.user;
 
   useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
-    const normalizedCart = storedCart.map((item) => ({
-      ...item,
-      quantity: item.quantity || 1,
-      product_cost: parseFloat(item.product_cost) || 0,
-    }));
-    setCart(normalizedCart);
-    console.log("Loaded Cart:", normalizedCart);
-  }, [location]);
+    const fetchCart = async () => {
+      if (user?.userId) {
+        setLoading(true);
+        try {
+          const response = await axios.get(
+            `http://localhost:5000/api/cart/${user.userId}`
+          );
+          setCart(response.data.items || []);
+        } catch (err) {
+          console.error("Error fetching cart:", err);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
 
-  const removeFromCart = (indexToRemove) => {
-    const updatedCart = cart.filter((_, index) => index !== indexToRemove);
-    setCart(updatedCart);
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
+    fetchCart();
+  }, [location, user]);
+
+  const addToCart = async (product) => {
+    if (user?.userId) {
+      setLoading(true);
+      try {
+        const response = await axios.post(
+          "http://localhost:5000/api/cart/add",
+          {
+            user_id: user.userId,
+            product,
+          }
+        );
+        setCart(response.data.items || []);
+      } catch (err) {
+        console.error("Error adding item to cart:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
-  const updateQuantity = (index, increment) => {
-    setCart((prevCart) => {
-      const updatedCart = [...prevCart];
-      if (increment) {
-        updatedCart[index] = {
-          ...updatedCart[index],
-          quantity: updatedCart[index].quantity + 1,
-        };
-      } else if (updatedCart[index].quantity > 1) {
-        updatedCart[index] = {
-          ...updatedCart[index],
-          quantity: updatedCart[index].quantity - 1,
-        };
+  const removeFromCart = async (product_id) => {
+    if (user?.userId) {
+      setLoading(true);
+      try {
+        const response = await axios.post(
+          "http://localhost:5000/api/cart/remove",
+          {
+            user_id: user.userId,
+            product_id,
+          }
+        );
+        setCart(response.data.items || []);
+      } catch (err) {
+        console.error("Error removing item from cart:", err);
+      } finally {
+        setLoading(false);
       }
-      localStorage.setItem("cart", JSON.stringify(updatedCart));
-      return updatedCart;
-    });
+    }
+  };
+
+  const updateQuantity = async (index, increment) => {
+    if (user?.userId) {
+      const updatedCart = [...cart];
+      const product = updatedCart[index];
+
+      if (increment) {
+        product.quantity += 1;
+      } else if (product.quantity > 1) {
+        product.quantity -= 1;
+      }
+
+      setLoading(true);
+      try {
+        await axios.post("http://localhost:5000/api/cart/add", {
+          user_id: user.userId,
+          product,
+        });
+        setCart(updatedCart);
+      } catch (err) {
+        console.error("Error updating quantity:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   const calculateTotal = () => {
@@ -52,6 +107,7 @@ const AddToCart = () => {
 
   return (
     <div className="cart-container">
+      {loading && <p className="loading">Loading...</p>}
       <div className="cart-items">
         {cart.length === 0 ? (
           <div className="text-center empty-cart">
@@ -81,7 +137,7 @@ const AddToCart = () => {
                 </div>
                 <button
                   className="btn btn-danger"
-                  onClick={() => removeFromCart(index)}
+                  onClick={() => removeFromCart(product.product_id)}
                 >
                   Remove
                 </button>

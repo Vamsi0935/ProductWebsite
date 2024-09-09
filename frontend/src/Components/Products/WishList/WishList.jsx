@@ -1,41 +1,67 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useAuth } from "../utils/AuthProvider";
 import "./wishlist.css";
 
 const Wishlist = () => {
   const [wishlist, setWishlist] = useState([]);
   const navigate = useNavigate();
+  const { user } = useAuth(); 
 
   useEffect(() => {
-    const storedWishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
-    setWishlist(storedWishlist);
-  }, []);
+    if (user) {
+      const fetchWishlist = async () => {
+        try {
+          const response = await axios.get(
+            `http://localhost:5000/api/wishlist/${user._id}`
+          );
+          setWishlist(response.data.wishlist.products);
+        } catch (error) {
+          console.error("Error fetching wishlist:", error);
+        }
+      };
 
-  const removeFromWishlist = (indexToRemove) => {
-    const updatedWishlist = wishlist.filter(
-      (_, index) => index !== indexToRemove
-    );
-    setWishlist(updatedWishlist);
-    localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
+      fetchWishlist();
+    }
+  }, [user]);
+
+  const removeFromWishlist = async (productId) => {
+    try {
+      await axios.delete("http://localhost:5000/api/wishlist/remove", {
+        data: { userId: user._id, productId },
+      });
+      setWishlist(
+        wishlist.filter((product) => product.productId !== productId)
+      );
+    } catch (error) {
+      console.error("Error removing product from wishlist:", error);
+    }
   };
 
-  const addToCart = (product) => {
-    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
-    const updatedCart = [...storedCart, product];
-    localStorage.setItem("cart", JSON.stringify(updatedCart));
-
-    navigate("/add-to-cart");
-
-    console.log("Cart updated:", updatedCart);
+  const addToCart = async (product) => {
+    try {
+      await axios.post("http://localhost:5000/api/cart/add", {
+        userId: user._id,
+        product,
+      });
+      navigate("/add-to-cart");
+    } catch (error) {
+      console.error("Error adding product to cart:", error);
+    }
   };
+
+  if (!user) {
+    return <p>Please log in to view your wishlist.</p>;
+  }
 
   return (
     <div className="wishlist-container">
       <h1>My Wishlist</h1>
       {wishlist.length > 0 ? (
         <ul>
-          {wishlist.map((product, index) => (
-            <li key={index} className="wishlist-product-card">
+          {wishlist.map((product) => (
+            <li key={product.productId} className="wishlist-product-card">
               <img src={product.product_url} alt={product.product_title} />
               <div className="wishlist-product-details">
                 <p>{product.product_title}</p>
@@ -51,7 +77,7 @@ const Wishlist = () => {
                 </button>
                 <button
                   className="btn btn-danger"
-                  onClick={() => removeFromWishlist(index)}
+                  onClick={() => removeFromWishlist(product.productId)}
                 >
                   Remove
                 </button>
